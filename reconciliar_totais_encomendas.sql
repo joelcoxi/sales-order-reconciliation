@@ -28,7 +28,8 @@ Reconciliation AS (
         LEFT JOIN OrderDetail B ON A.SalesOrderID = B.SalesOrderID
 )
 SELECT 
-    * 
+    R.*
+    ,R.TotalDue - R.TotalCalculado  AS Delta 
 FROM Reconciliation R
 WHERE ABS(R.TotalDue - R.TotalCalculado) >= 0.01
     OR R.TotalCalculado IS NULL
