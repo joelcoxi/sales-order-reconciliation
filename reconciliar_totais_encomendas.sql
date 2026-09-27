@@ -17,7 +17,7 @@ FROM (
             GROUP BY SalesOrderID
         ) B ON A.SalesOrderID = B.SalesOrderID 
 ) A
-WHERE A.TotalDue <> A.TotalCalculado
+WHERE ABS(A.TotalDue - A.TotalCalculado) >= 0.01
     OR A.TotalCalculado IS NULL
 
 --43875
