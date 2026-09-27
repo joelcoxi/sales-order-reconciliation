@@ -5,14 +5,16 @@
 SELECT 
     A.SalesOrderID
     ,A.TotalDue
-    ,B.TotalDue     AS TotalCalculado
+    ,B.TotalDueWithDiscount                 AS TotalCalculado
 FROM Sales.SalesOrderHeader A
     LEFT JOIN (
         SELECT 
             SalesOrderID
-            ,SUM(A.OrderQty * A.UnitPrice) AS TotalDue
+            ,SUM(A.OrderQty * (A.UnitPrice * (1 - A.UnitPriceDiscount))) AS TotalDueWithDiscount
         FROM Sales.SalesOrderDetail A
         GROUP BY SalesOrderID
     ) B ON A.SalesOrderID = B.SalesOrderID 
-WHERE A.TotalDue <> B.TotalDue
-    OR B.TotalDue IS NULL
+WHERE A.TotalDue <> B.TotalDueWithDiscount
+    OR B.TotalDueWithDiscount IS NULL
+
+--43875
