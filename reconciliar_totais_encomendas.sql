@@ -1,23 +1,34 @@
 -- reconciliar_totais_encomenda.sql
 -- v1: verifica se o total do cabecalho bate com a soma das linhas
 -- Autor: Joel Coxi
-SELECT 
-    * 
-FROM (
+
+WITH OrderHeader AS (
     SELECT 
         A.SalesOrderID
         ,A.TotalDue
+        ,A.Freight + A.TaxAmt   AS FreightTaxes
         ,A.[Status]
-        ,(B.TotalDueWithDiscount + A.Freight + A.TaxAmt)               AS TotalCalculado
     FROM Sales.SalesOrderHeader A
-        LEFT JOIN (
-            SELECT 
-                SalesOrderID
-                ,SUM(A.OrderQty * (A.UnitPrice * (1 - A.UnitPriceDiscount))) AS TotalDueWithDiscount
-            FROM Sales.SalesOrderDetail A
-            GROUP BY SalesOrderID
-        ) B ON A.SalesOrderID = B.SalesOrderID 
     WHERE A.[Status] = 5
-) A
-WHERE ABS(A.TotalDue - A.TotalCalculado) >= 0.01
-    OR A.TotalCalculado IS NULL
+),
+OrderDetail AS (
+    SELECT 
+        B.SalesOrderID
+        ,SUM(B.OrderQty * (B.UnitPrice * (1 - B.UnitPriceDiscount))) AS TotalDueWithDiscount
+    FROM Sales.SalesOrderDetail B
+    GROUP BY B.SalesOrderID
+),
+Reconciliation AS (
+    SELECT
+        A.SalesOrderID
+        ,A.TotalDue
+        ,B.TotalDueWithDiscount + A.FreightTaxes AS TotalCalculado
+        ,A.[Status]
+    FROM OrderHeader A
+        LEFT JOIN OrderDetail B ON A.SalesOrderID = B.SalesOrderID
+)
+SELECT 
+    * 
+FROM Reconciliation R
+WHERE ABS(R.TotalDue - R.TotalCalculado) >= 0.01
+    OR R.TotalCalculado IS NULL
