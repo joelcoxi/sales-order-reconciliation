@@ -7,6 +7,7 @@ FROM (
     SELECT 
         A.SalesOrderID
         ,A.TotalDue
+        ,A.[Status]
         ,(B.TotalDueWithDiscount + A.Freight + A.TaxAmt)               AS TotalCalculado
     FROM Sales.SalesOrderHeader A
         LEFT JOIN (
@@ -16,8 +17,15 @@ FROM (
             FROM Sales.SalesOrderDetail A
             GROUP BY SalesOrderID
         ) B ON A.SalesOrderID = B.SalesOrderID 
+    WHERE A.[Status] = 5
 ) A
 WHERE ABS(A.TotalDue - A.TotalCalculado) >= 0.01
     OR A.TotalCalculado IS NULL
+
+SELECT 
+   *
+FROM A
+
+
 
 --43875
