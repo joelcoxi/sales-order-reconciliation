@@ -6,7 +6,7 @@ WITH OrderHeader AS (
     SELECT 
         A.SalesOrderID
         ,A.TotalDue
-        ,A.Freight + A.TaxAmt   AS FreightTaxes
+        ,ISNULL(A.Freight, 0) + ISNULL(A.TaxAmt, 0)   AS FreightTaxes
         ,A.[Status]
     FROM Sales.SalesOrderHeader A
     WHERE A.[Status] = 5
@@ -30,6 +30,13 @@ Reconciliation AS (
 SELECT 
     R.*
     ,R.TotalDue - R.TotalCalculado  AS Delta 
+    ,CASE WHEN R.TotalCalculado IS NULL 
+        THEN 'Sem linhas de detalhe'
+     ELSE
+        CASE
+            WHEN ABS(R.TotalDue - R.TotalCalculado) >= 0.01
+            THEN 'Não reconciliado'
+            ELSE 'Reconciliado'
+        END  
+    END                           AS StatusReconciliacao
 FROM Reconciliation R
-WHERE ABS(R.TotalDue - R.TotalCalculado) >= 0.01
-    OR R.TotalCalculado IS NULL
