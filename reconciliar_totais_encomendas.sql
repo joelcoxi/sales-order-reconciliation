@@ -1,6 +1,15 @@
--- reconciliar_totais_encomenda.sql
--- v1: verifica se o total do cabecalho bate com a soma das linhas
--- Autor: Joel Coxi
+/*
+============================================================
+Título    : Reconciliação de Totais, Encomendas (SalesOrderHeader x SalesOrderDetail)
+Descrição : Compara o TotalDue do header de cada encomenda com o total
+            recalculado a partir das linhas de detalhe (quantidade,
+            preço unitário e desconto), mais frete e impostos.
+            Classifica cada encomenda como Reconciliado, Não reconciliado
+            ou Sem linhas de detalhe.
+Autor     : Joel Coxi
+Data      : 2026-09-27
+============================================================
+*/
 
 WITH OrderHeader AS (
     SELECT 
